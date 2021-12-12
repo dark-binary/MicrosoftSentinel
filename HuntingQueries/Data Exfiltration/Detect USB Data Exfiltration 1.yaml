@@ -11,5 +11,5 @@ DeviceFileEvents
 | where ActionType == "FileCreated" 
 | extend DriveLetterOrShare=split(FolderPath,':')[0] 
 | where DriveLetterOrShare != 'C' 
-| project tostring(DriveLetterOrShare), FolderPath, FileName, DeviceId, DeviceName, Timestamp, InitiatingProcessFileName, InitiatingProcessAccountUpn, InitiatingProcessCommandLine 
+| project tostring(DriveLetterOrShare), FolderPath, FileName, DeviceId, DeviceName, TimeGenerated, InitiatingProcessFileName, InitiatingProcessAccountUpn, InitiatingProcessCommandLine 
 version: 1.0.0

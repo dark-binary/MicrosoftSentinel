@@ -9,5 +9,5 @@ query: |
 DeviceEvents
 | where DeviceName contains "device-name"
 | where ActionType has_any ("PnpDeviceConnected", "UsbDriveMounted")
-| project Timestamp, InitiatingProcessAccountName, InitiatingProcessAccountUpn, DeviceName, ActionType, AdditionalFields
+| project TimeGenerated, InitiatingProcessAccountName, InitiatingProcessAccountUpn, DeviceName, ActionType, AdditionalFields
 version: 1.0.0

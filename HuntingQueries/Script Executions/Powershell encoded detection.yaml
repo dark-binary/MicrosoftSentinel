@@ -1,0 +1,12 @@
+name: Custom Script Executions
+description: |
+  'This hunting query looks for any execution of a powershell command that has a base64 encoded value (obfuscation method commonly used by threat actors).'
+requiredDataConnectors:
+  - connectorId: Microsoft 365 Defender
+    dataTypes: 
+      - DeviceProcessEvents
+query: |
+DeviceProcessEvents 
+| where FileName == "powershell.exe" and ProcessCommandLine matches regex @'(\s+-((?i)encod?e?d?c?o?m?m?a?n?d?|e|en|enc|ec)\s).*([A-Za-z0-9+/]{50,}[=]{0,2})'
+| project TimeGenerated, DeviceName, InitiatingProcessFileName, FileName, ProcessCommandLine, DeviceId, ReportId
+version: 1.0.0

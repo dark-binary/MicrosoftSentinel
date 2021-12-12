@@ -19,7 +19,7 @@ let FileCreation = DeviceFileEvents
 | where FolderPath !startswith "\\"
 | project ReportId,DeviceId,InitiatingProcessAccountDomain,
 InitiatingProcessAccountName,InitiatingProcessAccountUpn,
-FileName, FolderPath, SHA256, Timestamp, SensitivityLabel, IsAzureInfoProtectionApplied
+FileName, FolderPath, SHA256, TimeGenerated, SensitivityLabel, IsAzureInfoProtectionApplied
 | order by DeviceId asc, Timestamp desc;
 FileCreation | lookup kind=inner (UsbDriveMount) on DeviceId
 | where FolderPath startswith DriveLetter

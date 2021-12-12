@@ -1,0 +1,16 @@
+name: Custom Script Executions
+description: |
+  'This hunting query looks for any custom scipts executed in the machine.'
+requiredDataConnectors:
+  - connectorId: Microsoft 365 Defender
+    dataTypes: 
+      - DeviceFileEvents
+query: |
+DeviceFileEvents 
+| where DeviceName contains "device-name"
+| extend extension= extract(@".*(\..*)$",1,FileName) 
+| where extension in (".ps1",".bat",".cmd") 
+| extend DriveLetterOrShare=split(FolderPath,':')[0] 
+| where not (FolderPath has_any ("Windows Defender Advanced Threat Protection", "PSScriptPolicyTest")) //excluding False positives
+| project TimeGenerated, InitiatingProcessAccountUpn, DeviceName, FolderPath, FileName, InitiatingProcessFileName,  ReportId, InitiatingProcessCommandLine 
+version: 1.0.0
