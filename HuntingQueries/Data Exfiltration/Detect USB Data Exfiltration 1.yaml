@@ -2,7 +2,7 @@ name: Detect USB Data Exfiltration 1
 description: |
   'This hunting query looks for any data transfer from the machine to external devices (USB, HDD, SSD) that was connected in a given timeframe.'
 requiredDataConnectors:
-  - connectorId: Microsoft Defender for Endpoint
+  - connectorId: Microsoft 365 Defender
     dataTypes: 
       - DeviceFileEvents
 query: |

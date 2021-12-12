@@ -2,7 +2,7 @@ name: Detect External Devices
 description: |
   'This hunting query looks for any external devices (USB, HDD, SSD) that was connected to a machine in a given timeframe.'
 requiredDataConnectors:
-  - connectorId: Microsoft Defender for Endpoint
+  - connectorId: Microsoft 365 Defender
     dataTypes: 
       - DeviceEvents
 query: |
