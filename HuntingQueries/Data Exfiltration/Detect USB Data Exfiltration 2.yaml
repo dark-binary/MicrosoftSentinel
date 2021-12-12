@@ -1,0 +1,29 @@
+name: Detect USB Data Exfiltration 2
+description: |
+  'This hunting query looks for any data transfer from the machine to external devices (USB, HDD, SSD) that was connected in a given timeframe.'
+requiredDataConnectors:
+  - connectorId: Microsoft Defender for Endpoint
+    dataTypes: 
+      - DeviceEvents, DeviceFileEvents
+query: |
+let UsbDriveMount = DeviceEvents
+| where ActionType=="UsbDriveMount"
+| extend ParsedFields=parse_json(AdditionalFields)
+| project DeviceId, DeviceName, DriveLetter=ParsedFields.DriveLetter, MountTime=Timestamp,
+ProductName=ParsedFields.ProductName,SerialNumber=ParsedFields.SerialNumber,Manufacturer=ParsedFields.Manufacturer
+| order by DeviceId asc, MountTime desc;
+let FileCreation = DeviceFileEvents
+| where InitiatingProcessAccountName != "system"
+| where ActionType == "FileCreated"
+| where FolderPath !startswith "C:\\"
+| where FolderPath !startswith "\\"
+| project ReportId,DeviceId,InitiatingProcessAccountDomain,
+InitiatingProcessAccountName,InitiatingProcessAccountUpn,
+FileName, FolderPath, SHA256, Timestamp, SensitivityLabel, IsAzureInfoProtectionApplied
+| order by DeviceId asc, Timestamp desc;
+FileCreation | lookup kind=inner (UsbDriveMount) on DeviceId
+| where FolderPath startswith DriveLetter
+| where Timestamp >= MountTime
+| partition by ReportId ( top 1 by MountTime )
+| order by DeviceId asc, Timestamp desc
+version: 1.0.0

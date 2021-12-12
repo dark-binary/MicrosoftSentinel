@@ -1,0 +1,13 @@
+name: Detect External Devices
+description: |
+  'This hunting query looks for any external devices (USB, HDD, SSD) that was connected to a machine in a given timeframe.'
+requiredDataConnectors:
+  - connectorId: Microsoft Defender for Endpoint
+    dataTypes: 
+      - DeviceEvents
+query: |
+DeviceEvents
+| where DeviceName contains "device-name"
+| where ActionType has_any ("PnpDeviceConnected", "UsbDriveMounted")
+| project Timestamp, InitiatingProcessAccountName, InitiatingProcessAccountUpn, DeviceName, ActionType, AdditionalFields
+version: 1.0.0

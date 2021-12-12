@@ -1,0 +1,15 @@
+name: Detect USB Data Exfiltration 1
+description: |
+  'This hunting query looks for any data transfer from the machine to external devices (USB, HDD, SSD) that was connected in a given timeframe.'
+requiredDataConnectors:
+  - connectorId: Microsoft Defender for Endpoint
+    dataTypes: 
+      - DeviceFileEvents
+query: |
+DeviceFileEvents 
+| where DeviceName contains "device-name"
+| where ActionType == "FileCreated" 
+| extend DriveLetterOrShare=split(FolderPath,':')[0] 
+| where DriveLetterOrShare != 'C' 
+| project tostring(DriveLetterOrShare), FolderPath, FileName, DeviceId, DeviceName, Timestamp, InitiatingProcessFileName, InitiatingProcessAccountUpn, InitiatingProcessCommandLine 
+version: 1.0.0
