@@ -1,0 +1,292 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "metadata":{
+        "comments": "Microsoft Sentinel and Canary Token (Device) Integration",
+        "author": "Debac Manikandan"
+    },
+    "parameters": {
+        "PlaybookName": {
+            "defaultValue": "Ingest-CanaryAlerts",
+            "type": "String"
+        },
+        "WorkspaceID": {
+            "defaultValue": "your-workspaceID",
+            "type": "string"
+        },
+        "WorkspaceKey": {
+            "defaultValue": "your-workspaceKey",
+            "type": "securestring"
+        }
+    },
+    "variables": {
+        "azureloganalyticsdatacollectorConnectionName": "[concat('azureloganalyticsdatacollector-', parameters('PlaybookName'))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Web/connections",
+            "apiVersion": "2016-06-01",
+            "name": "[variables('azureloganalyticsdatacollectorConnectionName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "displayName": "IngestCanaryTokenAlerts",
+                "customParameterValues": {},
+                "api": {
+                    "id": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/azureloganalyticsdatacollector')]"
+                },
+                "parameterValues": {
+                    "username": "[parameters('workspaceId')]",
+                    "password": "[parameters('workspaceKey')]"
+                }               
+            }
+        },
+        {
+            "type": "Microsoft.Logic/workflows",
+            "apiVersion": "2017-07-01",
+            "name": "[parameters('PlaybookName')]",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "LogicAppsCategory": "security"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/connections', variables('azureloganalyticsdatacollectorConnectionName'))]"
+            ],
+            "properties": {
+                "state": "Enabled",
+                "definition": {
+                    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "$connections": {
+                            "defaultValue": {},
+                            "type": "Object"
+                        }
+                    },
+                    "triggers": {
+                        "manual": {
+                            "type": "Request",
+                            "kind": "Http",
+                            "inputs": {}
+                        }
+                    },
+                    "actions": {
+                        "Compose_data_for_Sentinel": {
+                            "runAfter": {
+                                "Parse_JSON_Token_Response": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "Compose",
+                            "inputs": {
+                                "AdditionalDetails": "@{body('Parse_JSON_Token_Response')?['AdditionalDetails']}",
+                                "AlertType": "@{body('Parse_JSON_Token_Response')?['AlertType']}",
+                                "CanaryID": "@{body('Parse_JSON_Token_Response')?['CanaryID']}",
+                                "CanaryIP": "@{body('Parse_JSON_Token_Response')?['CanaryIP']}",
+                                "CanaryLocation": "@{body('Parse_JSON_Token_Response')?['CanaryLocation']}",
+                                "CanaryName": "@{body('Parse_JSON_Token_Response')?['CanaryName']}",
+                                "CanaryPort": "@{body('Parse_JSON_Token_Response')?['CanaryPort']}",
+                                "Description": "@{body('Parse_JSON_Token_Response')?['Description']}",
+                                "IncidentHash": "@{body('Parse_JSON_Token_Response')?['IncidentHash']}",
+                                "Intro": "@{body('Parse_JSON_Token_Response')?['Intro']}",
+                                "ReverseDNS": "@{body('Parse_JSON_Token_Response')?['ReverseDNS']}",
+                                "SourceIP": "@{body('Parse_JSON_Token_Response')?['SourceIP']}",
+                                "Timestamp": "@{body('Parse_JSON_Token_Response')?['Timestamp']}"
+                            }
+                        },
+                        "Compose_data_for_Sentinel_(Canary_Port_as_String)": {
+                            "runAfter": {
+                                "Parse_JSON_Token_Response_(Canary_Port_as_String)": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "Compose",
+                            "inputs": {
+                                "AdditionalDetails": "@{body('Parse_JSON_Token_Response_(Canary_Port_as_String)')?['AdditionalDetails']}",
+                                "AlertType": "@{body('Parse_JSON_Token_Response_(Canary_Port_as_String)')?['AlertType']}",
+                                "CanaryID": "@{body('Parse_JSON_Token_Response_(Canary_Port_as_String)')?['CanaryID']}",
+                                "CanaryIP": "@{body('Parse_JSON_Token_Response_(Canary_Port_as_String)')?['CanaryIP']}",
+                                "CanaryLocation": "@{body('Parse_JSON_Token_Response_(Canary_Port_as_String)')?['CanaryLocation']}",
+                                "CanaryName": "@{body('Parse_JSON_Token_Response_(Canary_Port_as_String)')?['CanaryName']}",
+                                "CanaryPort": "@{body('Parse_JSON_Token_Response_(Canary_Port_as_String)')?['CanaryPort']}",
+                                "Description": "@{body('Parse_JSON_Token_Response_(Canary_Port_as_String)')?['Description']}",
+                                "IncidentHash": "@{body('Parse_JSON_Token_Response_(Canary_Port_as_String)')?['IncidentHash']}",
+                                "Intro": "@{body('Parse_JSON_Token_Response_(Canary_Port_as_String)')?['Intro']}",
+                                "ReverseDNS": "@{body('Parse_JSON_Token_Response_(Canary_Port_as_String)')?['ReverseDNS']}",
+                                "SourceIP": "@{body('Parse_JSON_Token_Response_(Canary_Port_as_String)')?['SourceIP']}",
+                                "Timestamp": "@{body('Parse_JSON_Token_Response_(Canary_Port_as_String)')?['Timestamp']}"
+                            }
+                        },
+                        "Parse_JSON_Token_Response": {
+                            "runAfter": {},
+                            "type": "ParseJson",
+                            "inputs": {
+                                "content": "@triggerBody()",
+                                "schema": {
+                                    "properties": {
+                                        "AdditionalDetails": {
+                                            "items": {
+                                                "items": {
+                                                    "type": "string"
+                                                },
+                                                "type": "array"
+                                            },
+                                            "type": "array"
+                                        },
+                                        "AlertType": {
+                                            "type": "string"
+                                        },
+                                        "CanaryID": {
+                                            "type": "string"
+                                        },
+                                        "CanaryIP": {
+                                            "type": "string"
+                                        },
+                                        "CanaryLocation": {
+                                            "type": "string"
+                                        },
+                                        "CanaryName": {
+                                            "type": "string"
+                                        },
+                                        "CanaryPort": {
+                                            "type": "integer"
+                                        },
+                                        "Description": {
+                                            "type": "string"
+                                        },
+                                        "IncidentHash": {
+                                            "type": "string"
+                                        },
+                                        "Intro": {
+                                            "type": "string"
+                                        },
+                                        "ReverseDNS": {
+                                            "type": "string"
+                                        },
+                                        "SourceIP": {
+                                            "type": "string"
+                                        },
+                                        "Timestamp": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "Parse_JSON_Token_Response_(Canary_Port_as_String)": {
+                            "runAfter": {},
+                            "type": "ParseJson",
+                            "inputs": {
+                                "content": "@triggerBody()",
+                                "schema": {
+                                    "properties": {
+                                        "AdditionalDetails": {
+                                            "items": {
+                                                "items": {
+                                                    "type": "string"
+                                                },
+                                                "type": "array"
+                                            },
+                                            "type": "array"
+                                        },
+                                        "AlertType": {
+                                            "type": "string"
+                                        },
+                                        "CanaryID": {
+                                            "type": "string"
+                                        },
+                                        "CanaryIP": {
+                                            "type": "string"
+                                        },
+                                        "CanaryLocation": {
+                                            "type": "string"
+                                        },
+                                        "CanaryName": {
+                                            "type": "string"
+                                        },
+                                        "CanaryPort": {
+                                            "type": "string"
+                                        },
+                                        "Description": {
+                                            "type": "string"
+                                        },
+                                        "IncidentHash": {
+                                            "type": "string"
+                                        },
+                                        "Intro": {
+                                            "type": "string"
+                                        },
+                                        "ReverseDNS": {
+                                            "type": "string"
+                                        },
+                                        "SourceIP": {
+                                            "type": "string"
+                                        },
+                                        "Timestamp": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "Send_Data": {
+                            "runAfter": {
+                                "Compose_data_for_Sentinel": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "ApiConnection",
+                            "inputs": {
+                                "body": "@{outputs('Compose_data_for_Sentinel')}",
+                                "headers": {
+                                    "Log-Type": "CanaryTokens"
+                                },
+                                "host": {
+                                    "connection": {
+                                        "name": "@parameters('$connections')['azureloganalyticsdatacollector']['connectionId']"
+                                    }
+                                },
+                                "method": "post",
+                                "path": "/api/logs"
+                            }
+                        },
+                        "Send_Data_(Canary_Port_as_String)": {
+                            "runAfter": {
+                                "Compose_data_for_Sentinel_(Canary_Port_as_String)": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "ApiConnection",
+                            "inputs": {
+                                "body": "@{outputs('Compose_data_for_Sentinel_(Canary_Port_as_String)')}",
+                                "headers": {
+                                    "Log-Type": "CanaryTokens"
+                                },
+                                "host": {
+                                    "connection": {
+                                        "name": "@parameters('$connections')['AzureLogAnalyticsDataCollector']['connectionId']"
+                                    }
+                                },
+                                "method": "post",
+                                "path": "/api/logs"
+                            }
+                        }
+                    },
+                    "outputs": {}
+                },
+                "parameters": {
+                    "$connections": {
+                        "value": {
+                            "AzureLogAnalyticsDataCollector": {
+                                "connectionId": "[resourceId('Microsoft.Web/connections', variables('azureloganalyticsdatacollectorConnectionName'))]",
+                                "connectionName": "[variables('azureloganalyticsdatacollectorConnectionName')]",
+                                "id": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/azureloganalyticsdatacollector')]"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}
