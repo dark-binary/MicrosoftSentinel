@@ -154,7 +154,7 @@
                         "WorkspaceKey": "[parameters('WorkspaceKey')]",
                         "SentinelOneAPIToken": "[parameters('SentinelOneAPIToken')]",
                         "SentinelOneUrl": "[parameters('SentinelOneUrl')]",
-                        "WEBSITE_RUN_FROM_PACKAGE": "https://aka.ms/sentinel-SentinelOneAPI-functionapp"
+                        "WEBSITE_RUN_FROM_PACKAGE": "https://github.com/dark-binary/MicrosoftSentinel/raw/main/DataConnectorDeployment/SentinelOne/SentinelOneAPISentinelConn.zip"
                     }
                 }
             ]
