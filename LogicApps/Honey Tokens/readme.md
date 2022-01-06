@@ -1,3 +1,5 @@
+# Canary Honey Token Alerts to Microsoft Sentinel
+
 Canary tokens that are publicly available and are free to use are called Honey Tokens.
 
 Following are some of the types of Honey Tokens:
