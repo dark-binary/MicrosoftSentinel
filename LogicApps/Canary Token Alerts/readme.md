@@ -1,3 +1,5 @@
+# Canary Alerts to Microsoft Sentinel
+
 Description: Azure Sentinel playbook to ingest alerts from Thinkst Canary Platform into Microsoft Sentinel:
 
 • Receive a trigger via a webhook from Canary platform that has the Logic App's Trigger URL
