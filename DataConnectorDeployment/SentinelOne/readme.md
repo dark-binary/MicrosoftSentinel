@@ -21,4 +21,4 @@ Permissions required:
 
 Author: Debac Manikandan
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fdark-binary%2FMicrosoftSentinel%2Fmain%2FData%2520Connector%2520Deployment%2FSentinelOne%2Ftemplate.json)
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fdark-binary%2FMicrosoftSentinel%2Fmain%2FDataConnectorDeployment%2FSentinelOne%2Ftemplate.json)
