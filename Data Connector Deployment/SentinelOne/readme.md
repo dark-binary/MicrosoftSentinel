@@ -1,4 +1,4 @@
-#SentinelOne to Microsoft Sentinel
+# SentinelOne to Microsoft Sentinel
 
 Description: Azure Template to automate deployment of a Function App, Application Insights, App Service Plan, and a Storage account.
 
