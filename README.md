@@ -1,4 +1,4 @@
-# MicrosoftSentinel
+# Microsoft Sentinel
 
 Warning: Not an expert!
 
