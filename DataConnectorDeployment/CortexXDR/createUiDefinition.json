@@ -16,9 +16,6 @@
                         "Microsoft.Insights/workbooks",
                         "Microsoft.Logic/workflows"
                     ]
-                },
-                "resourceGroup": {
-                    "allowExisting": true
                 }
             }
         },
