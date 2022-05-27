@@ -2,289 +2,1085 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "workspaceName": {
+        "dataconnectors-name": {
+            "type": "String",
+            "defaultValue": "Cortex XDR - Incidents"
+        },
+        "dataconnectors-id": {
+            "type": "String"
+        },
+        "workspace": {
+            "type": "String"
+        },
+        "workbook1-name": {
             "type": "string",
+            "defaultValue": "Cortex XDR Model Breach Summary",
             "metadata": {
-                "description": "Name for the Log Analytics workspace"
+                "description": "The friendly name for the workbook that is used in the Gallery or Saved List.  This name must be unique within a resource group."
             }
         },
-        "pricingTier": {
+        "workbook1-id": {
             "type": "string",
             "metadata": {
-                "description": "Pricing tier: pergb2018 or legacy tiers (Free, Standalone, PerNode, Standard or Premium) which are not available to all customers."
-            },
-            "allowedValues": [
-                "PerGB2018",
-                "Free",
-                "Standalone",
-                "PerNode",
-                "Standard",
-                "Premium"
-            ],
-            "defaultValue": "PerGB2018"
-        },
-        "dailyQuota": {
-            "type": "int",
-            "metadata": {
-                "description": "Daily ingestion limit in GBs. This limit doesn't apply to the following tables: SecurityAlert, SecurityBaseline, SecurityBaselineSummary, SecurityDetection, SecurityEvent, WindowsFirewall, MaliciousIPCommunication, LinuxAuditLog, SysmonEvent, ProtectionStatus, WindowsEvent"
+                "description": "The unique guid for this workbook instance"
             }
-        },
-        "dataRetention": {
-            "type": "int",
-            "minValue": 7,
-            "maxValue": 730,
-            "metadata": {
-                "description": "Number of days of retention. Workspaces in the legacy Free pricing tier can only have 7 days."
-            },
-            "defaultValue": 30
-        },
-        "immediatePurgeDataOn30Days": {
-            "type": "bool",
-            "metadata": {
-                "description": "If set to true when changing retention to 30 days, older data will be immediately deleted. Use this with extreme caution. This only applies when retention is being set to 30 days."
-            },
-            "defaultValue": true
-        },
-        "securityCollectionTier": {
-            "type": "string",
-            "defaultValue": "Recommended",
-            "allowedValues": [
-                "All",
-                "Recommended",
-                "Minimal",
-                "None"
-            ],
-            "metadata": {
-                "description": "Tier for gathering Windows Security Events."
-            }
-        },
-        "enableDataConnectorsKind": {
-            "type": "array",
-            "metadata": {
-                "description": "The kind of data connectors that can be deployed via ARM templates are the following: [\"AzureActivityLog\",\"SecurityInsightsSecurityEventCollectionConfiguration\",\"WindowsFirewall\",\"DnsAnalytics\"], Reference: https://docs.microsoft.com/azure/templates/microsoft.operationalinsights/2020-03-01-preview/workspaces/datasources#microsoftoperationalinsightsworkspacesdatasources-object"
-            },
-            "defaultValue": []
-        },
-        "enableFusionAlert": {
-            "type": "bool",
-            "metadata": {
-                "description": "Enable Fusion analytics rules"
-            },
-            "defaultValue": true
-        },
-        "enableMicrosoftAlerts": {
-            "type": "bool",
-            "metadata": {
-                "description": "Enable Microsoft analytics rules"
-            },
-            "defaultValue": false
-        },
-        "enableMLAlerts": {
-            "type": "bool",
-            "metadata": {
-                "description": "Enable ML Behavior Analytics rules"
-            },
-            "defaultValue": false
-        },
-        "enableScheduledAlerts": {
-            "type": "bool",
-            "metadata": {
-                "description": "Enable Scheduled analytics rules"
-            },
-            "defaultValue": false
-        },
-        "enableMVPAlerts": {
-            "type": "bool",
-            "metadata": {
-                "description": "Enable Scheduled MVP analytics rules"
-            },
-            "defaultValue": false
-        },
-        "mcasDiscoveryLogs": {
-            "type": "bool",
-            "metadata": {
-                "description": "Enable MCAS Discovery Logs"
-            },
-            "defaultValue": false
-        },
-        "_artifactsLocation": {
-            "type": "string",
-            "metadata": {
-                "description": "The location of resources"
-            },
-            "defaultValue": "https://raw.githubusercontent.com/Shivniel/Azure/master/AzureSentinelviaARM/"
-        },
-        "_artifactsLocationSasToken": {
-            "type": "securestring",
-            "metadata": {
-                "description": "Auto-generated token to access _artifactsLocation. Leave it blank unless you need to provide your own value."
-            },
-            "defaultValue": ""
-        },
-        "location": {
-            "type": "string",
-            "metadata": {
-                "description": "Location for all resources."
-            },
-            "defaultValue": "[resourceGroup().location]"
         }
     },
     "variables": {
-        "quoatSetting": {
-            "dailyQuotaGb": "[parameters('dailyQuota')]"
+        "workbookSourceId": "[concat('/subscriptions/', subscription().subscriptionId, '/resourcegroups/', resourceGroup().name, '/providers/microsoft.operationalinsights/workspaces/', parameters('workspace'))]",
+        "workbookType": "sentinel",
+        "workbookContent": {
+            "version": "Notebook/1.0",
+            "items": [
+                {
+                    "type": 11,
+                    "content": {
+                        "version": "LinkItem/1.0",
+                        "style": "tabs",
+                        "links": [
+                            {
+                                "id": "45805ae8-29d7-4774-a10a-8d60af407bbf",
+                                "cellValue": "tab",
+                                "linkTarget": "parameter",
+                                "linkLabel": "Overview",
+                                "subTarget": "overview",
+                                "style": "link"
+                            }
+                        ]
+                    },
+                    "name": "tabs"
+                },
+                {
+                    "type": 9,
+                    "content": {
+                        "version": "KqlParameterItem/1.0",
+                        "parameters": [
+                            {
+                                "id": "96e10804-35d4-4d5c-b2d8-1af544471721",
+                                "version": "KqlParameterItem/1.0",
+                                "name": "Timeframe",
+                                "type": 4,
+                                "description": "Pick the timerange for all queries in the graph ",
+                                "isRequired": true,
+                                "value": {
+                                    "durationMs": 1209600000
+                                },
+                                "typeSettings": {
+                                    "selectableValues": [
+                                        {
+                                            "durationMs": 300000
+                                        },
+                                        {
+                                            "durationMs": 900000
+                                        },
+                                        {
+                                            "durationMs": 1800000
+                                        },
+                                        {
+                                            "durationMs": 3600000
+                                        },
+                                        {
+                                            "durationMs": 14400000
+                                        },
+                                        {
+                                            "durationMs": 43200000
+                                        },
+                                        {
+                                            "durationMs": 86400000
+                                        },
+                                        {
+                                            "durationMs": 172800000
+                                        },
+                                        {
+                                            "durationMs": 259200000
+                                        },
+                                        {
+                                            "durationMs": 604800000
+                                        },
+                                        {
+                                            "durationMs": 1209600000
+                                        },
+                                        {
+                                            "durationMs": 2419200000
+                                        },
+                                        {
+                                            "durationMs": 2592000000
+                                        },
+                                        {
+                                            "durationMs": 5184000000
+                                        },
+                                        {
+                                            "durationMs": 7776000000
+                                        }
+                                    ]
+                                },
+                                "timeContext": {
+                                    "durationMs": 86400000
+                                }
+                            }
+                        ],
+                        "style": "pills",
+                        "doNotRunWhenHidden": true,
+                        "queryType": 0,
+                        "resourceType": "microsoft.operationalinsights/workspaces"
+                    },
+                    "name": "Timescale "
+                },
+                {
+                    "type": 12,
+                    "content": {
+                        "version": "NotebookGroup/1.0",
+                        "groupType": "editable",
+                        "items": [
+                            {
+                                "type": 9,
+                                "content": {
+                                    "version": "KqlParameterItem/1.0",
+                                    "parameters": [
+                                        {
+                                            "id": "610136a1-b7cf-4eb3-9ef6-51a2d22e1621",
+                                            "version": "KqlParameterItem/1.0",
+                                            "name": "_severity",
+                                            "type": 1,
+                                            "description": "parameter to drill down on clicked severity tile",
+                                            "value": "hidden",
+                                            "isHiddenWhenLocked": true,
+                                            "timeContext": {
+                                                "durationMs": 86400000
+                                            },
+                                            "label": "severity"
+                                        }
+                                    ],
+                                    "style": "above",
+                                    "queryType": 0,
+                                    "resourceType": "microsoft.operationalinsights/workspaces"
+                                },
+                                "name": "parameters - 1"
+                            },
+                            {
+                                "type": 3,
+                                "content": {
+                                    "version": "KqlItem/1.0",
+                                    "query": "CortexXDR_Incidents_CL\r\n| where status_s !contains \"resolved_auto\"\r\n| extend status = case(    \r\n        severity_s == \"high\", \"High\",\r\n        severity_s == \"medium\", \"Medium\",\r\n        severity_s == \"low\", \"Low\",       \r\n        \"True\"\r\n        )\r\n    | extend status_count = case(status == \"High\", 3, status == \"Medium\", 2, 1)\r\n    | summarize Count = count() by status, status_count\r\n| summarize Count=sum(Count) by status, status_count\r\n| sort by status_count asc",
+                                    "size": 3,
+                                    "title": "Model Breaches By Severity",
+                                    "timeContextFromParameter": "Timeframe",
+                                    "exportFieldName": "status",
+                                    "exportParameterName": "_severity",
+                                    "queryType": 0,
+                                    "resourceType": "microsoft.operationalinsights/workspaces",
+                                    "visualization": "tiles",
+                                    "tileSettings": {
+                                        "titleContent": {
+                                            "columnMatch": "status",
+                                            "formatter": 18,
+                                            "formatOptions": {
+                                                "thresholdsOptions": "colors",
+                                                "thresholdsGrid": [
+                                                    {
+                                                        "operator": "==",
+                                                        "thresholdValue": "Low",
+                                                        "representation": "yellow",
+                                                        "text": "{0}{1}"
+                                                    },
+                                                    {
+                                                        "operator": "==",
+                                                        "thresholdValue": "Medium",
+                                                        "representation": "orange",
+                                                        "text": "{0}{1}"
+                                                    },
+                                                    {
+                                                        "operator": "==",
+                                                        "thresholdValue": "High",
+                                                        "representation": "redBright",
+                                                        "text": "{0}{1}"
+                                                    },
+                                                    {
+                                                        "operator": "==",
+                                                        "thresholdValue": "Critical",
+                                                        "representation": "red",
+                                                        "text": "{0}{1}"
+                                                    },
+                                                    {
+                                                        "operator": "Default",
+                                                        "thresholdValue": null,
+                                                        "representation": "green",
+                                                        "text": "{0}{1}"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "leftContent": {
+                                            "columnMatch": "Count",
+                                            "formatter": 1,
+                                            "numberFormat": {
+                                                "unit": 17,
+                                                "options": {
+                                                    "style": "decimal",
+                                                    "useGrouping": false,
+                                                    "maximumFractionDigits": 2,
+                                                    "maximumSignificantDigits": 3
+                                                }
+                                            }
+                                        },
+                                        "showBorder": true,
+                                        "size": "auto"
+                                    }
+                                },
+                                "name": "model breaches by severity"
+                            },
+                            {
+                                "type": 1,
+                                "content": {
+                                    "json": "_Click on the tiles to view more details (maximum 100 entries displayed)_",
+                                    "style": "info"
+                                },
+                                "name": "text - 3"
+                            },
+                            {
+                                "type": 12,
+                                "content": {
+                                    "version": "NotebookGroup/1.0",
+                                    "groupType": "editable",
+                                    "items": [
+                                        {
+                                            "type": 3,
+                                            "content": {
+                                                "version": "KqlItem/1.0",
+                                                "query": "//low severity\r\nCortexXDR_Incidents_CL\r\n| where status_s !contains \"resolved_auto\"\r\n| where severity_s == \"low\"\r\n| limit 100\r\n| project TimeGenerated, incident_id_s, status_s, severity_s, incident_sources_s, description_s, xdr_url_s, hosts_s, users_s, alert_categories_s, host_count_d, user_count_d, alert_count_d, creation_time_d, modification_time_d\r\n| sort by TimeGenerated desc",
+                                                "size": 0,
+                                                "title": "Low Severity Model Breaches",
+                                                "timeContextFromParameter": "Timeframe",
+                                                "queryType": 0,
+                                                "resourceType": "microsoft.operationalinsights/workspaces",
+                                                "visualization": "table",
+                                                "gridSettings": {
+                                                    "formatters": [
+                                                        {
+                                                            "columnMatch": "TimeGenerated",
+                                                            "formatter": 6,
+                                                            "formatOptions": {
+                                                                "customColumnWidthSetting": "20%"
+                                                            }
+                                                        },
+                                                        {
+                                                            "columnMatch": "Activity",
+                                                            "formatter": 1,
+                                                            "formatOptions": {
+                                                                "linkColumn": "DarktraceURL",
+                                                                "linkTarget": "Url",
+                                                                "customColumnWidthSetting": "40%"
+                                                            }
+                                                        },
+                                                        {
+                                                            "columnMatch": "DeviceName",
+                                                            "formatter": 1,
+                                                            "formatOptions": {
+                                                                "customColumnWidthSetting": "17.5%"
+                                                            }
+                                                        },
+                                                        {
+                                                            "columnMatch": "DeviceAddress",
+                                                            "formatter": 1,
+                                                            "formatOptions": {
+                                                                "customColumnWidthSetting": "17.5%"
+                                                            }
+                                                        },
+                                                        {
+                                                            "columnMatch": "LogSeverity",
+                                                            "formatter": 18,
+                                                            "formatOptions": {
+                                                                "thresholdsOptions": "colors",
+                                                                "thresholdsGrid": [
+                                                                    {
+                                                                        "operator": "Default",
+                                                                        "thresholdValue": null,
+                                                                        "representation": "yellow",
+                                                                        "text": "{0}{1}"
+                                                                    }
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "columnMatch": "DarktraceURL",
+                                                            "formatter": 5
+                                                        },
+                                                        {
+                                                            "columnMatch": "DarktraceUrl",
+                                                            "formatter": 5,
+                                                            "formatOptions": {
+                                                                "linkTarget": "Url"
+                                                            }
+                                                        },
+                                                        {
+                                                            "columnMatch": "OtherExtensions",
+                                                            "formatter": 5,
+                                                            "formatOptions": {
+                                                                "customColumnWidthSetting": "50%"
+                                                            }
+                                                        }
+                                                    ],
+                                                    "labelSettings": [
+                                                        {
+                                                            "columnId": "TimeGenerated",
+                                                            "label": "Time"
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            "conditionalVisibility": {
+                                                "parameterName": "_severity",
+                                                "comparison": "isEqualTo",
+                                                "value": "Low"
+                                            },
+                                            "name": "Low severity model breaches"
+                                        },
+                                        {
+                                            "type": 3,
+                                            "content": {
+                                                "version": "KqlItem/1.0",
+                                                "query": "//medium severity\r\nCortexXDR_Incidents_CL\r\n| where status_s !contains \"resolved_auto\"\r\n| where severity_s == \"medium\"\r\n| limit 100\r\n| project TimeGenerated, incident_id_s, status_s, severity_s, incident_sources_s, description_s, xdr_url_s, hosts_s, users_s, alert_categories_s, host_count_d, user_count_d, alert_count_d, creation_time_d, modification_time_d\r\n| sort by TimeGenerated desc",
+                                                "size": 0,
+                                                "title": "Medium Severity Model Breaches",
+                                                "timeContextFromParameter": "Timeframe",
+                                                "queryType": 0,
+                                                "resourceType": "microsoft.operationalinsights/workspaces",
+                                                "visualization": "table",
+                                                "gridSettings": {
+                                                    "formatters": [
+                                                        {
+                                                            "columnMatch": "TimeGenerated",
+                                                            "formatter": 6,
+                                                            "formatOptions": {
+                                                                "customColumnWidthSetting": "20%"
+                                                            }
+                                                        },
+                                                        {
+                                                            "columnMatch": "Activity",
+                                                            "formatter": 1,
+                                                            "formatOptions": {
+                                                                "linkColumn": "DarktraceURL",
+                                                                "linkTarget": "Url",
+                                                                "customColumnWidthSetting": "40%"
+                                                            }
+                                                        },
+                                                        {
+                                                            "columnMatch": "DeviceName",
+                                                            "formatter": 1,
+                                                            "formatOptions": {
+                                                                "customColumnWidthSetting": "17.5%"
+                                                            }
+                                                        },
+                                                        {
+                                                            "columnMatch": "DeviceAddress",
+                                                            "formatter": 1,
+                                                            "formatOptions": {
+                                                                "customColumnWidthSetting": "17.5%"
+                                                            }
+                                                        },
+                                                        {
+                                                            "columnMatch": "LogSeverity",
+                                                            "formatter": 18,
+                                                            "formatOptions": {
+                                                                "thresholdsOptions": "colors",
+                                                                "thresholdsGrid": [
+                                                                    {
+                                                                        "operator": "Default",
+                                                                        "thresholdValue": null,
+                                                                        "representation": "orange",
+                                                                        "text": "{0}{1}"
+                                                                    }
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "columnMatch": "DarktraceURL",
+                                                            "formatter": 5
+                                                        },
+                                                        {
+                                                            "columnMatch": "DarktraceUrl",
+                                                            "formatter": 5,
+                                                            "formatOptions": {
+                                                                "linkTarget": "Url"
+                                                            }
+                                                        },
+                                                        {
+                                                            "columnMatch": "OtherExtensions",
+                                                            "formatter": 5,
+                                                            "formatOptions": {
+                                                                "customColumnWidthSetting": "50%"
+                                                            }
+                                                        }
+                                                    ],
+                                                    "labelSettings": [
+                                                        {
+                                                            "columnId": "TimeGenerated",
+                                                            "label": "Time"
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            "conditionalVisibility": {
+                                                "parameterName": "_severity",
+                                                "comparison": "isEqualTo",
+                                                "value": "Medium"
+                                            },
+                                            "name": "Medium severity model breaches "
+                                        },
+                                        {
+                                            "type": 3,
+                                            "content": {
+                                                "version": "KqlItem/1.0",
+                                                "query": "//high severity\r\nCortexXDR_Incidents_CL\r\n| where status_s !contains \"resolved_auto\"\r\n| where severity_s == \"high\"\r\n| limit 100\r\n| project TimeGenerated, incident_id_s, status_s, severity_s, incident_sources_s, description_s, xdr_url_s, hosts_s, users_s, alert_categories_s, host_count_d, user_count_d, alert_count_d, creation_time_d, modification_time_d\r\n| sort by TimeGenerated desc",
+                                                "size": 0,
+                                                "title": "High Severity Model Breaches",
+                                                "timeContextFromParameter": "Timeframe",
+                                                "queryType": 0,
+                                                "resourceType": "microsoft.operationalinsights/workspaces",
+                                                "visualization": "table",
+                                                "gridSettings": {
+                                                    "formatters": [
+                                                        {
+                                                            "columnMatch": "TimeGenerated",
+                                                            "formatter": 6,
+                                                            "formatOptions": {
+                                                                "customColumnWidthSetting": "20%"
+                                                            }
+                                                        },
+                                                        {
+                                                            "columnMatch": "Activity",
+                                                            "formatter": 1,
+                                                            "formatOptions": {
+                                                                "linkColumn": "DarktraceURL",
+                                                                "linkTarget": "Url",
+                                                                "customColumnWidthSetting": "40%"
+                                                            }
+                                                        },
+                                                        {
+                                                            "columnMatch": "DeviceName",
+                                                            "formatter": 1,
+                                                            "formatOptions": {
+                                                                "customColumnWidthSetting": "17.5%"
+                                                            }
+                                                        },
+                                                        {
+                                                            "columnMatch": "DeviceAddress",
+                                                            "formatter": 1,
+                                                            "formatOptions": {
+                                                                "customColumnWidthSetting": "17.5%"
+                                                            }
+                                                        },
+                                                        {
+                                                            "columnMatch": "LogSeverity",
+                                                            "formatter": 18,
+                                                            "formatOptions": {
+                                                                "thresholdsOptions": "colors",
+                                                                "thresholdsGrid": [
+                                                                    {
+                                                                        "operator": "Default",
+                                                                        "thresholdValue": null,
+                                                                        "representation": "redBright",
+                                                                        "text": "{0}{1}"
+                                                                    }
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "columnMatch": "DarktraceURL",
+                                                            "formatter": 5
+                                                        },
+                                                        {
+                                                            "columnMatch": "DarktraceUrl",
+                                                            "formatter": 5,
+                                                            "formatOptions": {
+                                                                "linkTarget": "Url"
+                                                            }
+                                                        },
+                                                        {
+                                                            "columnMatch": "AdditionalExtensions",
+                                                            "formatter": 5,
+                                                            "formatOptions": {
+                                                                "customColumnWidthSetting": "70%"
+                                                            }
+                                                        }
+                                                    ],
+                                                    "labelSettings": [
+                                                        {
+                                                            "columnId": "TimeGenerated",
+                                                            "label": "Time"
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            "conditionalVisibility": {
+                                                "parameterName": "_severity",
+                                                "comparison": "isEqualTo",
+                                                "value": "High"
+                                            },
+                                            "name": "High severity model breaches "
+                                        }
+                                    ]
+                                },
+                                "conditionalVisibility": {
+                                    "parameterName": "_severity",
+                                    "comparison": "isNotEqualTo",
+                                    "value": "hidden"
+                                },
+                                "name": "Drill down group for different severities"
+                            },
+                            {
+                                "type": 3,
+                                "content": {
+                                    "version": "KqlItem/1.0",
+                                    "query": "CortexXDR_Incidents_CL\r\n| where status_s !contains \"resolved_auto\"\r\n| make-series count() default=0 on TimeGenerated in range({Timeframe:start}, now(), {Timeframe:grain})",
+                                    "size": 3,
+                                    "title": "Model Breaches Over Time ",
+                                    "color": "orange",
+                                    "timeContextFromParameter": "Timeframe",
+                                    "timeBrushParameterName": "Timeframe",
+                                    "queryType": 0,
+                                    "resourceType": "microsoft.operationalinsights/workspaces",
+                                    "visualization": "areachart",
+                                    "chartSettings": {
+                                        "showMetrics": false
+                                    }
+                                },
+                                "name": "breaches in group"
+                            },
+                            {
+                                "type": 1,
+                                "content": {
+                                    "json": "_ Selecting a timeframe on the graph will change the timeframe for all queries in this tab _",
+                                    "style": "info"
+                                },
+                                "name": "text - 11"
+                            },
+                            {
+                                "type": 3,
+                                "content": {
+                                    "version": "KqlItem/1.0",
+                                    "query": "CortexXDR_Incidents_CL\r\n| where status_s !contains \"resolved_auto\"\r\n| summarize event_count=count() by description_s\r\n| top 10 by event_count",
+                                    "size": 0,
+                                    "title": "Top 10 Most Breached Models",
+                                    "timeContextFromParameter": "Timeframe",
+                                    "queryType": 0,
+                                    "resourceType": "microsoft.operationalinsights/workspaces",
+                                    "gridSettings": {
+                                        "formatters": [
+                                            {
+                                                "columnMatch": "Activity",
+                                                "formatter": 0,
+                                                "formatOptions": {
+                                                    "customColumnWidthSetting": "60ch"
+                                                }
+                                            },
+                                            {
+                                                "columnMatch": "event_count",
+                                                "formatter": 3,
+                                                "formatOptions": {
+                                                    "palette": "orange"
+                                                }
+                                            }
+                                        ],
+                                        "labelSettings": [
+                                            {
+                                                "columnId": "event_count",
+                                                "label": "Count"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "customWidth": "55",
+                                "name": "most breached models"
+                            },
+                            {
+                                "type": 3,
+                                "content": {
+                                    "version": "KqlItem/1.0",
+                                    "query": "CortexXDR_Incidents_CL\r\n| where status_s !contains \"resolved_auto\"\r\n| where isnotempty(hosts_s)\r\n| summarize count(description_s) by hosts_s",
+                                    "size": 3,
+                                    "title": "Top External Hostnames",
+                                    "timeContextFromParameter": "Timeframe",
+                                    "queryType": 0,
+                                    "resourceType": "microsoft.operationalinsights/workspaces",
+                                    "visualization": "piechart"
+                                },
+                                "customWidth": "45",
+                                "name": "top external hostnames"
+                            },
+                            {
+                                "type": 3,
+                                "content": {
+                                    "version": "KqlItem/1.0",
+                                    "query": "CortexXDR_Incidents_CL\r\n| where status_s !contains \"resolved_auto\"\r\n| where isnotempty(hosts_s)\r\n| project TimeGenerated, description_s, hosts_s, users_s, severity_s, xdr_url_s\r\n| top 10 by severity_s desc",
+                                    "size": 0,
+                                    "title": "Top 10 Devices By Severity",
+                                    "timeContextFromParameter": "Timeframe",
+                                    "queryType": 0,
+                                    "resourceType": "microsoft.operationalinsights/workspaces",
+                                    "visualization": "table",
+                                    "gridSettings": {
+                                        "formatters": [
+                                            {
+                                                "columnMatch": "TimeGenerated",
+                                                "formatter": 0,
+                                                "formatOptions": {
+                                                    "customColumnWidthSetting": "20%"
+                                                }
+                                            },
+                                            {
+                                                "columnMatch": "Activity",
+                                                "formatter": 1,
+                                                "formatOptions": {
+                                                    "linkColumn": "DarktraceURL",
+                                                    "linkTarget": "Url",
+                                                    "customColumnWidthSetting": "40%"
+                                                }
+                                            },
+                                            {
+                                                "columnMatch": "DeviceName",
+                                                "formatter": 0,
+                                                "formatOptions": {
+                                                    "customColumnWidthSetting": "17.5%"
+                                                }
+                                            },
+                                            {
+                                                "columnMatch": "DeviceAddress",
+                                                "formatter": 0,
+                                                "formatOptions": {
+                                                    "customColumnWidthSetting": "17.5%"
+                                                }
+                                            },
+                                            {
+                                                "columnMatch": "Severity",
+                                                "formatter": 8,
+                                                "formatOptions": {
+                                                    "min": 1,
+                                                    "max": 10,
+                                                    "palette": "yellowOrangeRed"
+                                                }
+                                            },
+                                            {
+                                                "columnMatch": "DarktraceURL",
+                                                "formatter": 5
+                                            }
+                                        ],
+                                        "sortBy": [
+                                            {
+                                                "itemKey": "severity_s",
+                                                "sortOrder": 1
+                                            }
+                                        ],
+                                        "labelSettings": [
+                                            {
+                                                "columnId": "TimeGenerated",
+                                                "label": "Time"
+                                            }
+                                        ]
+                                    },
+                                    "sortBy": [
+                                        {
+                                            "itemKey": "severity_s",
+                                            "sortOrder": 1
+                                        }
+                                    ]
+                                },
+                                "name": "Top 10 hitting devices"
+                            },
+                            {
+                                "type": 3,
+                                "content": {
+                                    "version": "KqlItem/1.0",
+                                    "query": "CortexXDR_Incidents_CL\r\n| where status_s !contains \"resolved_auto\"\r\n| where isnotempty(users_s)\r\n| summarize count(description_s) by users_s",
+                                    "size": 0,
+                                    "title": "Top Usernames",
+                                    "timeContextFromParameter": "Timeframe",
+                                    "queryType": 0,
+                                    "resourceType": "microsoft.operationalinsights/workspaces",
+                                    "visualization": "barchart"
+                                },
+                                "customWidth": "80",
+                                "name": "top users"
+                            }
+                        ],
+                        "exportParameters": true
+                    },
+                    "conditionalVisibility": {
+                        "parameterName": "tab",
+                        "comparison": "isEqualTo",
+                        "value": "overview"
+                    },
+                    "name": "overview"
+                }
+            ],
+            "isLocked": false,
+            "fallbackResourceIds": [
+                "[concat('/subscriptions/', subscription().subscriptionId, '/resourcegroups/', resourceGroup().name, '/providers/microsoft.operationalinsights/workspaces/', parameters('workspace'))]"
+            ],
+            "fromTemplateId": "sentinel-UserWorkbook"
         }
     },
+    "functions": [],
     "resources": [
         {
-            "name": "[parameters('workspaceName')]",
-            "type": "Microsoft.OperationalInsights/workspaces",
-            "apiVersion": "2015-11-01-preview",
-            "location": "[parameters('location')]",
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/d459c44f-a7fd-44b2-ba33-db53bf6061dc')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/d459c44f-a7fd-44b2-ba33-db53bf6061dc')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2021-10-01-preview",
             "properties": {
-                "retentionInDays": "[parameters('dataRetention')]",
-                "workspaceCapping": "[if(equals(parameters('dailyQuota'),0), json('null'), variables('quoatSetting'))]",
-                "features": {
-                    "immediatePurgeDataOn30Days": "[parameters('immediatePurgeDataOn30Days')]"
-                },
-                "sku": {
-                    "name": "[parameters('pricingTier')]"
-                }
-            }
-        },
-        {
-            "name": "[concat('SecurityInsights','(', parameters('workspaceName'),')')]",
-            "type": "Microsoft.OperationsManagement/solutions",
-            "apiVersion": "2015-11-01-preview",
-            "location": "[parameters('location')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.OperationalInsights/workspaces/', parameters('workspaceName'))]"
-            ],
-            "properties": {
-                "workspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaceName'))]"
-            },
-            "plan": {
-                "name": "[concat('SecurityInsights','(', parameters('workspaceName'),')')]",
-                "product": "OMSGallery/SecurityInsights",
-                "publisher": "Microsoft",
-                "promotionCode": ""
-            }
-        },
-        {
-            "condition": "[not(empty(parameters('enableDataConnectorsKind')))]",
-            "name": "enableDataConnectorsKind",
-            "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2019-05-01",
-            "dependsOn": [
-                "[resourceId('Microsoft.OperationsManagement/solutions/', concat('SecurityInsights','(', parameters('workspaceName'),')'))]"
-            ],
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "[uri(parameters('_artifactsLocation'), concat('ARMTemplates/LinkedTemplates/dataConnectors.json', parameters('_artifactsLocationSasToken')))]",
-                    "contentVersion": "1.0.0.0"
-                },
-                "parameters": {
-                    "dataConnectorsKind": {
-                        "value": "[parameters('enableDataConnectorsKind')]"
-                    },
-                    "workspaceName": {
-                        "value": "[parameters('workspaceName')]"
-                    },
-                    "tenantId": {
-                        "value": "[subscription().tenantId]"
-                    },
-                    "subscriptionId": {
-                        "value": "[subscription().subscriptionId]"
-                    },
-                    "securityCollectionTier": {
-                        "value": "[parameters('securityCollectionTier')]"
-                    },
-                    "mcasDiscoveryLogs": {
-                        "value": "[parameters('mcasDiscoveryLogs')]"
-                    },
-                    "location": {
-                        "value": "[parameters('location')]"
+                "displayName": "Cortex XDR Incident - High",
+                "description": "A new incident was created in the Cortex XDR portal with a severity \"High\". Click on the events for incident details. ",
+                "severity": "High",
+                "enabled": false,
+                "query": "CortexXDR_Incidents_CL\r\n| where severity_s contains \"high\"\r\n| where status_s !contains \"resolved_auto\"\r\n| where host_count_d > 0 or user_count_d > 0\r\n| project TimeGenerated, incident_id_s, status_s, severity_s, incident_sources_s, description_s, xdr_url_s, hosts_s, users_s, alert_categories_s, host_count_d, user_count_d, alert_count_d, creation_time_d, modification_time_d",
+                "queryFrequency": "PT5M",
+                "queryPeriod": "PT5M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "tactics": [],
+                "techniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
                     }
-                }
-            }
-        },
-        {
-            "condition": "[or(parameters('enableFusionAlert'),parameters('enableMicrosoftAlerts'),parameters('enableMLAlerts'))]",
-            "name": "enableAlerts",
-            "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2019-05-01",
-            "dependsOn": [
-                "[resourceId('Microsoft.OperationsManagement/solutions/', concat('SecurityInsights','(', parameters('workspaceName'),')'))]"
-            ],
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "[uri(parameters('_artifactsLocation'), concat('ARMTemplates/LinkedTemplates/alertRules.json', parameters('_artifactsLocationSasToken')))]",
-                    "contentVersion": "1.0.0.0"
                 },
-                "parameters": {
-                    "dataConnectorsKind": {
-                        "value": "[parameters('enableDataConnectorsKind')]"
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "URL",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Url",
+                                "columnName": "xdr_url_s"
+                            }
+                        ]
                     },
-                    "workspaceName": {
-                        "value": "[parameters('workspaceName')]"
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Name",
+                                "columnName": "users_s"
+                            }
+                        ]
                     },
-                    "location": {
-                        "value": "[parameters('location')]"
-                    },
-                    "enableFusionAlert":{
-                        "value": "[parameters('enableFusionAlert')]"
-                    },
-                    "enableMicrosoftAlerts":{
-                        "value": "[parameters('enableMicrosoftAlerts')]"
-                    },
-                    "enableMLAlerts":{
-                        "value": "[parameters('enableMLAlerts')]"
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "hosts_s"
+                            }
+                        ]
                     }
-                }
+                ],
+                "sentinelEntitiesMappings": null
             }
         },
         {
-            "condition": "[parameters('enableScheduledAlerts')]",
-            "name": "enableScheduledAlerts",
-            "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2019-05-01",
-            "dependsOn": [
-                "[resourceId('Microsoft.Resources/deployments/', 'enableAlerts')]"
-            ],
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/9cdaf387-c8db-4866-bfb5-217508c41e29')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/9cdaf387-c8db-4866-bfb5-217508c41e29')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2021-10-01-preview",
             "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "[uri(parameters('_artifactsLocation'), concat('ARMTemplates/LinkedTemplates/scheduledAlerts.json', parameters('_artifactsLocationSasToken')))]",
-                    "contentVersion": "1.0.0.0"
+                "displayName": "Cortex XDR Incident - Medium",
+                "description": "A new incident was created in the Cortex XDR portal with a severity \"Medium\". Click on the events for incident details. ",
+                "severity": "Medium",
+                "enabled": false,
+                "query": "CortexXDR_Incidents_CL\r\n| where severity_s contains \"medium\"\r\n| where status_s !contains \"resolved_auto\"\r\n| where host_count_d > 0 or user_count_d > 0\r\n| project TimeGenerated, incident_id_s, status_s, severity_s, incident_sources_s, description_s, xdr_url_s, hosts_s, users_s, alert_categories_s, host_count_d, user_count_d, alert_count_d, creation_time_d, modification_time_d",
+                "queryFrequency": "PT5M",
+                "queryPeriod": "PT5M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "tactics": [],
+                "techniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
                 },
-                "parameters": {
-                    "workspaceName": {
-                        "value": "[parameters('workspaceName')]"
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "URL",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Url",
+                                "columnName": "xdr_url_s"
+                            }
+                        ]
                     },
-                    "dataConnectorsList":{
-                        "value": "[replace(replace(string(parameters('enableDataConnectorsKind')),'\"',''),'[','')]"
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Name",
+                                "columnName": "users_s"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "hosts_s"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null
+            }
+        },
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/913c2e86-34a8-48fb-8008-cbf8617cad04')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/913c2e86-34a8-48fb-8008-cbf8617cad04')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2021-10-01-preview",
+            "properties": {
+                "displayName": "Cortex XDR Incident - Low",
+                "description": "A new incident was created in the Cortex XDR portal with a severity \"Low\". Click on the events for incident details. ",
+                "severity": "Low",
+                "enabled": false,
+                "query": "CortexXDR_Incidents_CL\r\n| where severity_s contains \"low\"\r\n| where status_s !contains \"resolved_auto\"\r\n| where host_count_d > 0 or user_count_d > 0\r\n| project TimeGenerated, incident_id_s, status_s, severity_s, incident_sources_s, description_s, xdr_url_s, hosts_s, users_s, alert_categories_s, host_count_d, user_count_d, alert_count_d, creation_time_d, modification_time_d",
+                "queryFrequency": "PT5M",
+                "queryPeriod": "PT5M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "tactics": [],
+                "techniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "URL",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Url",
+                                "columnName": "xdr_url_s"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Account",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Name",
+                                "columnName": "users_s"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "Host",
+                        "fieldMappings": [
+                            {
+                                "identifier": "HostName",
+                                "columnName": "hosts_s"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null
+            }
+        },
+        {
+            "name": "[parameters('workbook1-id')]",
+            "type": "microsoft.insights/workbooks",
+            "location": "[resourceGroup().location]",
+            "apiVersion": "2021-03-08",
+            "dependsOn": [],
+            "kind": "shared",
+            "properties": {
+                "displayName": "[parameters('workbook1-name')]",
+                "serializedData": "[string(variables('workbookContent'))]",
+                "version": "1.0",
+                "sourceId": "[variables('workbookSourceId')]",
+                "category": "[variables('workbookType')]"
+            }
+        },
+        {
+            "type": "Microsoft.OperationalInsights/workspaces/providers/dataConnectors",
+            "apiVersion": "2021-03-01-preview",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/', parameters('dataconnectors-name'))]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [],
+            "kind": "APIPolling",
+            "properties": {
+                "connectorUiConfig": {
+                    "availability": {
+                        "isPreview": true,
+                        "status": 1
+                    },
+                    "connectivityCriteria": [
+                        {
+                            "type": "SentinelKindsV2",
+                            "value": []
+                        }
+                    ],
+                    "dataTypes": [
+                        {
+                            "lastDataReceivedQuery": "{{graphQueriesTableName}}\n            | summarize Time = max(TimeGenerated)\n            | where isnotempty(Time)",
+                            "name": "{{graphQueriesTableName}}"
+                        }
+                    ],
+                    "descriptionMarkdown": "Custom Data connector from DEFEND to utilise the Cortex API to ingest incidents from Cortex XDR platform into Microsoft Sentinel.",
+                    "graphQueries": [
+                        {
+                            "baseQuery": "{{graphQueriesTableName}}",
+                            "legend": "Cortex XDR Incidents",
+                            "metricName": "Total data received"
+                        }
+                    ],
+                    "graphQueriesTableName": "CortexXDR_Incidents_CL",
+                    "id": "[concat('DEFEND-', parameters('dataconnectors-id'))]",
+                    "instructionSteps": [
+                        {
+                            "description": "Connect Cortex XDR to Microsoft Sentinel via Cortex API to process Cortex Incidents.",
+                            "instructions": [
+                                {
+                                    "parameters": {
+                                        "enable": "true",
+                                        "userRequestPlaceHoldersInput": [
+                                            {
+                                                "displayText": "API Endpoint, excluding the 'api-' portion (example.xdr.au.paloaltonetworks.com)",
+                                                "placeHolderName": "{{fqdn}}",
+                                                "requestObjectKey": "apiEndpoint"
+                                            },
+                                            {
+                                                "displayText": "API Key Id",
+                                                "placeHolderName": "{{apiKeyId}}",
+                                                "pollingKeyPaths": [
+                                                    "$.request.headers.x-xdr-auth-id"
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    "type": "APIKey"
+                                }
+                            ],
+                            "title": "Enable Cortex XDR API"
+                        }
+                    ],
+                    "permissions": {
+                        "customs": [
+                            {
+                                "description": "**Cortex API Token** is required for REST API. [See the documentation to learn more about API](https://docs.paloaltonetworks.com/cortex/cortex-xdr/cortex-xdr-api.html). Check all requirements and follow the instructions for obtaining credentials.",
+                                "name": "Cortex API credentials"
+                            }
+                        ],
+                        "resourceProvider": [
+                            {
+                                "permissionsDisplayText": "read and write permissions are required.",
+                                "provider": "Microsoft.OperationalInsights/workspaces",
+                                "providerDisplayName": "Workspace",
+                                "requiredPermissions": {
+                                    "delete": true,
+                                    "read": true,
+                                    "write": true
+                                },
+                                "scope": "Workspace"
+                            },
+                            {
+                                "permissionsDisplayText": "read permissions to shared keys for the workspace are required. [See the documentation to learn more about workspace keys](https://docs.microsoft.com/azure/azure-monitor/platform/agent-windows#obtain-workspace-id-and-key)",
+                                "provider": "Microsoft.OperationalInsights/workspaces/sharedKeys",
+                                "providerDisplayName": "Keys",
+                                "requiredPermissions": {
+                                    "action": true
+                                },
+                                "scope": "Workspace"
+                            }
+                        ]
+                    },
+                    "publisher": "DEFEND Ltd",
+                    "sampleQueries": [
+                        {
+                            "description": "All Cortex XDR Incidents",
+                            "query": "{{graphQueriesTableName}}\n| sort by TimeGenerated desc"
+                        }
+                    ],
+                    "title": "Cortex XDR - Incidents"
+                },
+                "pollingConfig": {
+                    "auth": {
+                        "apiKeyName": "Authorization",
+                        "authType": "APIKey"
+                    },
+                    "isActive": true,
+                    "paging": {
+                        "pagingType": "None"
+                    },
+                    "request": {
+                        "apiEndpoint": "https://api-{{fqdn}}/public_api/v1/incidents/get_incidents/",
+                        "headers": {
+                            "x-xdr-auth-id": "{{apiKeyId}}"
+                        },
+                        "httpMethod": "Post",
+                        "queryParametersTemplate": "{ 'request_data': { 'filters': [ { 'field': 'modification_time', 'operator': 'gte', 'value': {_QueryWindowStartTime} } ], 'sort': { 'field': 'modification_time', 'keyword': 'desc' } } }",
+                        "queryTimeFormat": "UnixTimestampInMills",
+                        "queryWindowInMin": 5
+                    },
+                    "response": {
+                        "eventsJsonPaths": [
+                            "$..incidents"
+                        ]
                     }
                 }
             }
         }
     ],
     "outputs": {
-        "workspaceName": {
+        "workbook1-id": {
             "type": "string",
-            "value": "[parameters('workspaceName')]"
-        },
-        "workspaceIdOutput": {
-            "type": "string",
-            "value": "[reference(resourceId('Microsoft.OperationalInsights/workspaces/', parameters('workspaceName')), '2015-11-01-preview').customerId]"
-        },
-        "workspaceKeyOutput": {
-            "type": "string",
-            "value": "[listKeys(resourceId('Microsoft.OperationalInsights/workspaces/', parameters('workspaceName')), '2015-11-01-preview').primarySharedKey]"
-        },
-        "dataConnectorsList": {
-            "type": "string",
-            "value": "[replace(replace(string(parameters('enableDataConnectorsKind')),'\"',''),'[','')]"
+            "value": "[resourceId( 'microsoft.insights/workbooks', parameters('workbook1-id'))]"
         }
     }
 }
