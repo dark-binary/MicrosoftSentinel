@@ -224,11 +224,6 @@
             }
         ],
         "outputs": {
-            "workspace": "[basics('workspace')]",
-            "workbook1-name": "[steps('workbooks').workbook1.workbook1-name]",
-            "workbook1-id": "[steps('workbooks').workbook1.workbook1-id]",
-            "dataconnectors-name": "[steps('dataconnectors').dataconnector1.dataconnectors-name]",
-            "dataconnectors-id": "[steps('dataconnectors').dataconnector1.dataconnectors-id]"
         }
     }
 }
